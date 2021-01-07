@@ -18,6 +18,8 @@
   purrr::walk(packages,library,character.only=TRUE)
   
   cleanbib()
+  
+  options("citation_format" = "pandoc")
 
 
 

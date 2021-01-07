@@ -2,7 +2,7 @@
 title: "Untitled"
 output: html_document
 bibliography: "packageCitations.bib"
-csl: BibStyle.csl
+csl: "BibStyle.csl"
 ---
 
 ```{r GlobalOptions}
@@ -25,6 +25,8 @@ csl: BibStyle.csl
   purrr::walk(packages,library,character.only=TRUE)
   
   cleanbib()
+  
+  options("citation_format" = "pandoc")
 
 ```
 
