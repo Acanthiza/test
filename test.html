@@ -417,11 +417,15 @@ summary {
 <pre class="r"><code>  # Enables using readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)) to include code at end of document (otherwise &#39;duplicate labels&#39; error)
 
   options(knitr.duplicate.label = &#39;allow&#39;)</code></pre>
-<pre class="r"><code>  packages &lt;- c(&quot;tidyverse&quot;
+<pre class="r"><code>  packages &lt;- c(&quot;base&quot;
+                , &quot;tidyverse&quot;
                 , &quot;bookdown&quot;
-                , &quot;kableExtra&quot;
-                , &quot;knitcitations&quot;
+                , &quot;knitr&quot;
+                #, &quot;kableExtra&quot;
                 , &quot;devtools&quot;
+                , &quot;fastcluster&quot;
+                , &quot;cluster&quot;
+                , &quot;randomForest&quot;
                 )
 
   purrr::walk(packages,library,character.only=TRUE)</code></pre>
@@ -433,15 +437,51 @@ summary {
 <pre><code>## -- Conflicts ------------------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre><code>## Loading required package: usethis</code></pre>
 <pre><code>## 
-## Attaching package: &#39;kableExtra&#39;</code></pre>
+## Attaching package: &#39;fastcluster&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     hclust</code></pre>
+<pre><code>## randomForest 4.6-14</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:dplyr&#39;:
 ## 
-##     group_rows</code></pre>
-<pre><code>## Loading required package: usethis</code></pre>
-<pre class="r"><code>  cleanbib()
+##     combine</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<pre class="r"><code>  write_bib(packages,&quot;packageCitations.bib&quot;)
   
-  options(&quot;citation_format&quot; = &quot;pandoc&quot;)</code></pre>
+  refs &lt;- bib2df::bib2df(&quot;packageCitations.bib&quot;)</code></pre>
+<pre><code>## Warning: `as_data_frame()` is deprecated as of tibble 2.0.0.
+## Please use `as_tibble()` instead.
+## The signature and semantics have changed, see `?as_tibble`.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
+<pre class="r"><code>  cite_package &lt;- function(package,brack = TRUE,startText = &quot;&quot;, endText = &quot;&quot;) {
+    
+    thisRef &lt;- refs %&gt;%
+      dplyr::filter(grepl(paste0(&quot;-&quot;,package),BIBTEXKEY) | grepl(paste0(&quot;^&quot;,package),BIBTEXKEY)) %&gt;%
+      dplyr::pull(BIBTEXKEY)
+    
+    starts &lt;- if(brack) paste0(&quot;[&quot;,startText,&quot;@&quot;) else paste0(startText,&quot;@&quot;)
+    ends &lt;- if(brack) paste0(endText,&quot;]&quot;) else endText
+    
+    if(length(thisRef) &gt; 1) {
+      
+      paste0(starts,paste0(thisRef,collapse = &quot;; @&quot;),ends)
+      
+      } else {
+        
+        paste0(starts,&quot;R-&quot;,package,ends)
+        
+        }
+    
+  }</code></pre>
+<p>BIBTEXKEY &lt;- refs$BIBTEXKEY</p>
 <div id="document" class="section level1">
 <h1>Document</h1>
 <pre class="r"><code>  plot(cars[,1:2])</code></pre>
@@ -1537,7 +1577,9 @@ Figure 2 caption
 </table>
 <hr />
 <p>Some text with a citation <span class="citation">(Xie 2014; Xie 2015; Xie 2020a)</span>.</p>
-<p>Another citation <span class="citation">(Liaw and Wiener 2002)</span>.</p>
+<p>Another citation <span class="citation">(Liaw and Wiener 2002; Leo Breiman <em>et al.</em> 2018)</span>.</p>
+<p>Accents on author name <span class="citation">(Müllner 2013; Müllner 2018)</span>.</p>
+<p>What about <code>cluster</code> <span class="citation">(Maechler <em>et al.</em> 2019)</span>.</p>
 </div>
 <div id="appendix" class="section level1">
 <h1>Appendix</h1>
@@ -1551,18 +1593,43 @@ Figure 2 caption
 
 ## ----setup--------------------------------------------------------------------
 
-  packages &lt;- c(&quot;tidyverse&quot;
+  packages &lt;- c(&quot;base&quot;
+                , &quot;tidyverse&quot;
                 , &quot;bookdown&quot;
-                , &quot;kableExtra&quot;
-                , &quot;knitcitations&quot;
+                , &quot;knitr&quot;
+                #, &quot;kableExtra&quot;
                 , &quot;devtools&quot;
+                , &quot;fastcluster&quot;
+                , &quot;cluster&quot;
+                , &quot;randomForest&quot;
                 )
 
   purrr::walk(packages,library,character.only=TRUE)
   
-  cleanbib()
+  write_bib(packages,&quot;packageCitations.bib&quot;)
   
-  options(&quot;citation_format&quot; = &quot;pandoc&quot;)
+  refs &lt;- bib2df::bib2df(&quot;packageCitations.bib&quot;)
+  
+  cite_package &lt;- function(package,brack = TRUE,startText = &quot;&quot;, endText = &quot;&quot;) {
+    
+    thisRef &lt;- refs %&gt;%
+      dplyr::filter(grepl(paste0(&quot;-&quot;,package),BIBTEXKEY) | grepl(paste0(&quot;^&quot;,package),BIBTEXKEY)) %&gt;%
+      dplyr::pull(BIBTEXKEY)
+    
+    starts &lt;- if(brack) paste0(&quot;[&quot;,startText,&quot;@&quot;) else paste0(startText,&quot;@&quot;)
+    ends &lt;- if(brack) paste0(endText,&quot;]&quot;) else endText
+    
+    if(length(thisRef) &gt; 1) {
+      
+      paste0(starts,paste0(thisRef,collapse = &quot;; @&quot;),ends)
+      
+      } else {
+        
+        paste0(starts,&quot;R-&quot;,package,ends)
+        
+        }
+    
+  }
 
 
 
@@ -1603,185 +1670,149 @@ Figure 2 caption
 ## ----packages-----------------------------------------------------------------
 
   kable(tibble(package = packages) %&gt;%
-          dplyr::mutate(citation = map_chr(package,~citet(citation(.)))) %&gt;%
-          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %&gt;%
+          dplyr::mutate(citation = map_chr(package,cite_package,brack = FALSE)) %&gt;%
+          dplyr::left_join(as_tibble(devtools::session_info(include_base = TRUE)$packages)) %&gt;%
           dplyr::select(package,citation,loadedversion,date,source)
         , caption = paste0(&quot;R &quot;
-                           , citep(citation(&quot;base&quot;))
-                           , &quot; packages used in the production of this report&quot;
-                           )
-        )
-
-
-
-## ----references---------------------------------------------------------------
-
-  knitcitations::write.bibtex(file=&quot;packageCitations.bib&quot;)</code></pre>
-<div id="packages" class="section level2">
-<h2>Packages</h2>
-<pre class="r"><code>  kable(tibble(package = packages) %&gt;%
-          dplyr::mutate(citation = map_chr(package,~citet(citation(.)))) %&gt;%
-          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %&gt;%
-          dplyr::select(package,citation,loadedversion,date,source)
-        , caption = paste0(&quot;R &quot;
-                           , citep(citation(&quot;base&quot;))
+                           , cite_package(&quot;base&quot;)
                            , &quot; packages used in the production of this report&quot;
                            )
         )</code></pre>
-<pre><code>## Warning in citation(.): no date field in DESCRIPTION file of package
-## &#39;knitcitations&#39;</code></pre>
+<div id="packages" class="section level2">
+<h2>Packages</h2>
+<pre class="r"><code>  kable(tibble(package = packages) %&gt;%
+          dplyr::mutate(citation = map_chr(package,cite_package,brack = FALSE)) %&gt;%
+          dplyr::left_join(as_tibble(devtools::session_info(include_base = TRUE)$packages)) %&gt;%
+          dplyr::select(package,citation,loadedversion,date,source)
+        , caption = paste0(&quot;R &quot;
+                           , cite_package(&quot;base&quot;)
+                           , &quot; packages used in the production of this report&quot;
+                           )
+        )</code></pre>
 <pre><code>## Joining, by = &quot;package&quot;</code></pre>
-<table>
-<caption>
-R <span class="citation">(R Core Team 2020)</span> packages used in the production of this report
-</caption>
+<table style="width:100%;">
+<caption>R <span class="citation">(R Core Team 2020)</span> packages used in the production of this report</caption>
+<colgroup>
+<col width="14%"></col>
+<col width="39%"></col>
+<col width="15%"></col>
+<col width="12%"></col>
+<col width="17%"></col>
+</colgroup>
 <thead>
-<tr>
-<th style="text-align:left;">
-package
-</th>
-<th style="text-align:left;">
-citation
-</th>
-<th style="text-align:left;">
-loadedversion
-</th>
-<th style="text-align:left;">
-date
-</th>
-<th style="text-align:left;">
-source
-</th>
+<tr class="header">
+<th align="left">package</th>
+<th align="left">citation</th>
+<th align="left">loadedversion</th>
+<th align="left">date</th>
+<th align="left">source</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:left;">
-tidyverse
-</td>
-<td style="text-align:left;">
-<span class="citation">Wickham <em>et al.</em> (2019)</span>
-</td>
-<td style="text-align:left;">
-1.3.0
-</td>
-<td style="text-align:left;">
-2019-11-21
-</td>
-<td style="text-align:left;">
-CRAN (R 4.0.2)
-</td>
+<tr class="odd">
+<td align="left">base</td>
+<td align="left"><span class="citation">R Core Team (2020)</span></td>
+<td align="left">4.0.2</td>
+<td align="left">2020-06-22</td>
+<td align="left">local</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-bookdown
-</td>
-<td style="text-align:left;">
-<span class="citation">Xie (2020b)</span>, <span class="citation">Xie (2016)</span>
-</td>
-<td style="text-align:left;">
-0.20
-</td>
-<td style="text-align:left;">
-2020-06-23
-</td>
-<td style="text-align:left;">
-CRAN (R 4.0.2)
-</td>
+<tr class="even">
+<td align="left">tidyverse</td>
+<td align="left"><span class="citation">Wickham (2019)</span>; <span class="citation">Wickham <em>et al.</em> (2019)</span></td>
+<td align="left">1.3.0</td>
+<td align="left">2019-11-21</td>
+<td align="left">CRAN (R 4.0.2)</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-kableExtra
-</td>
-<td style="text-align:left;">
-<span class="citation">Zhu (2019)</span>
-</td>
-<td style="text-align:left;">
-1.1.0
-</td>
-<td style="text-align:left;">
-2019-03-16
-</td>
-<td style="text-align:left;">
-CRAN (R 4.0.2)
-</td>
+<tr class="odd">
+<td align="left">bookdown</td>
+<td align="left"><span class="citation">Xie (2020b)</span>; <span class="citation">Xie (2016)</span></td>
+<td align="left">0.20</td>
+<td align="left">2020-06-23</td>
+<td align="left">CRAN (R 4.0.2)</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-knitcitations
-</td>
-<td style="text-align:left;">
-<span class="citation">Boettiger (2021)</span>
-</td>
-<td style="text-align:left;">
-1.0.12
-</td>
-<td style="text-align:left;">
-2021-01-07
-</td>
-<td style="text-align:left;">
-Github (<a href="mailto:cboettig/knitcitations@c5b3ece" class="email">cboettig/knitcitations@c5b3ece</a>)
-</td>
+<tr class="even">
+<td align="left">knitr</td>
+<td align="left"><span class="citation">Xie (2020a)</span>; <span class="citation">Xie (2015)</span>; <span class="citation">Xie (2014)</span></td>
+<td align="left">1.29</td>
+<td align="left">2020-06-23</td>
+<td align="left">CRAN (R 4.0.2)</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-devtools
-</td>
-<td style="text-align:left;">
-<span class="citation">Wickham <em>et al.</em> (2020)</span>
-</td>
-<td style="text-align:left;">
-2.3.1
-</td>
-<td style="text-align:left;">
-2020-07-21
-</td>
-<td style="text-align:left;">
-CRAN (R 4.0.2)
-</td>
+<tr class="odd">
+<td align="left">devtools</td>
+<td align="left"><span class="citation">Wickham <em>et al.</em> (2020)</span></td>
+<td align="left">2.3.1</td>
+<td align="left">2020-07-21</td>
+<td align="left">CRAN (R 4.0.2)</td>
+</tr>
+<tr class="even">
+<td align="left">fastcluster</td>
+<td align="left"><span class="citation">Müllner (2018)</span>; <span class="citation">Müllner (2013)</span></td>
+<td align="left">1.1.25</td>
+<td align="left">2018-06-07</td>
+<td align="left">CRAN (R 4.0.0)</td>
+</tr>
+<tr class="odd">
+<td align="left">cluster</td>
+<td align="left"><span class="citation">Maechler <em>et al.</em> (2019)</span></td>
+<td align="left">2.1.0</td>
+<td align="left">2019-06-19</td>
+<td align="left">CRAN (R 4.0.2)</td>
+</tr>
+<tr class="even">
+<td align="left">randomForest</td>
+<td align="left"><span class="citation">Leo Breiman <em>et al.</em> (2018)</span>; <span class="citation">Liaw and Wiener (2002)</span></td>
+<td align="left">4.6-14</td>
+<td align="left">2018-03-25</td>
+<td align="left">CRAN (R 4.0.2)</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="references" class="section level1">
+<div id="references" class="section level1 unnumbered">
 <h1>References</h1>
-<pre class="r"><code>  knitcitations::write.bibtex(file=&quot;packageCitations.bib&quot;)</code></pre>
-<pre><code>## Writing 11 Bibtex entries ... OK
-## Results written to file &#39;packageCitations.bib&#39;</code></pre>
 <div id="refs" class="references">
-<div id="ref-Boettiger_2021">
-<p>Boettiger, C. (2021). ‘Knitcitations: Citations for ’knitr’ markdown files’. Available at: <a href="https://github.com/cboettig/knitcitations">https://github.com/cboettig/knitcitations</a></p>
+<div id="ref-R-randomForest">
+<p>Leo Breiman, F. original by, Cutler, A., Andy Liaw, R. port by, and Wiener., M. (2018). ‘RandomForest: Breiman and cutler’s random forests for classification and regression’. Available at: <a href="https://CRAN.R-project.org/package=randomForest">https://CRAN.R-project.org/package=randomForest</a></p>
 </div>
-<div id="ref-Liaw_2002">
+<div id="ref-randomForest2002">
 <p>Liaw, A., and Wiener, M. (2002). Classification and regression by randomForest. <em>R News</em> <strong>2</strong>, 18–22. Available at: <a href="https://CRAN.R-project.org/doc/Rnews/">https://CRAN.R-project.org/doc/Rnews/</a></p>
 </div>
-<div id="ref-R_Core_Team_2020">
+<div id="ref-R-cluster">
+<p>Maechler, M., Rousseeuw, P., Struyf, A., and Hubert, M. (2019). ‘Cluster: &quot;Finding groups in data&quot;: Cluster analysis extended rousseeuw et al.’ Available at: <a href="https://CRAN.R-project.org/package=cluster">https://CRAN.R-project.org/package=cluster</a></p>
+</div>
+<div id="ref-fastcluster2013">
+<p>Müllner, D. (2013). fastcluster: Fast hierarchical, agglomerative clustering routines for R and Python. <em>Journal of Statistical Software</em> <strong>53</strong>, 1–18. Available at: <a href="http://www.jstatsoft.org/v53/i09/">http://www.jstatsoft.org/v53/i09/</a></p>
+</div>
+<div id="ref-R-fastcluster">
+<p>Müllner, D. (2018). ‘Fastcluster: Fast hierarchical clustering routines for r and ’python’’. Available at: <a href="https://CRAN.R-project.org/package=fastcluster">https://CRAN.R-project.org/package=fastcluster</a></p>
+</div>
+<div id="ref-R-base">
 <p>R Core Team (2020). ‘R: A language and environment for statistical computing’. (R Foundation for Statistical Computing: Vienna, Austria.) Available at: <a href="https://www.R-project.org/">https://www.R-project.org/</a></p>
 </div>
-<div id="ref-Wickham_2019">
+<div id="ref-R-tidyverse">
+<p>Wickham, H. (2019). ‘Tidyverse: Easily install and load the ’tidyverse’’. Available at: <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a></p>
+</div>
+<div id="ref-tidyverse2019">
 <p>Wickham, H., Averick, M., Bryan, J., Chang, W., McGowan, L. D., François, R., Grolemund, G., Hayes, A., Henry, L., Hester, J., Kuhn, M., Pedersen, T. L., Miller, E., Bache, S. M., Müller, K., Ooms, J., Robinson, D., Seidel, D. P., Spinu, V., Takahashi, K., Vaughan, D., Wilke, C., Woo, K., and Yutani, H. (2019). Welcome to the tidyverse. <em>Journal of Open Source Software</em> <strong>4</strong>, 1686. doi:<a href="https://doi.org/10.21105/joss.01686">10.21105/joss.01686</a></p>
 </div>
-<div id="ref-Wickham_2020">
+<div id="ref-R-devtools">
 <p>Wickham, H., Hester, J., and Chang, W. (2020). ‘Devtools: Tools to make developing r packages easier’. Available at: <a href="https://CRAN.R-project.org/package=devtools">https://CRAN.R-project.org/package=devtools</a></p>
 </div>
-<div id="ref-Xie_2014">
+<div id="ref-knitr2014">
 <p>Xie, Y. (2014). Knitr: A comprehensive tool for reproducible research in R. In ‘Implementing reproducible computational research’. (Eds V. Stodden, F. Leisch, and R. D. Peng.) (Chapman; Hall/CRC.) Available at: <a href="http://www.crcpress.com/product/isbn/9781466561595">http://www.crcpress.com/product/isbn/9781466561595</a></p>
 </div>
-<div id="ref-Xie_2015">
+<div id="ref-knitr2015">
 <p>Xie, Y. (2015). ‘Dynamic documents with R and knitr’ 2nd ed. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a></p>
 </div>
-<div id="ref-Xie_2016">
+<div id="ref-bookdown2016">
 <p>Xie, Y. (2016). ‘Bookdown: Authoring books and technical documents with R markdown’. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://github.com/rstudio/bookdown">https://github.com/rstudio/bookdown</a></p>
 </div>
-<div id="ref-Xie_2020">
-<p>Xie, Y. (2020a). ‘Knitr: A general-purpose package for dynamic report generation in r’. Available at: <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a></p>
+<div id="ref-R-knitr">
+<p>Xie, Y. (2020a). ‘Knitr: A general-purpose package for dynamic report generation in r’. Available at: <a href="https://CRAN.R-project.org/package=knitr">https://CRAN.R-project.org/package=knitr</a></p>
 </div>
-<div id="ref-Xie_2020a">
-<p>Xie, Y. (2020b). ‘Bookdown: Authoring books and technical documents with r markdown’. Available at: <a href="https://github.com/rstudio/bookdown">https://github.com/rstudio/bookdown</a></p>
-</div>
-<div id="ref-Zhu_2019">
-<p>Zhu, H. (2019). ‘KableExtra: Construct complex table with ’kable’ and pipe syntax’. Available at: <a href="https://CRAN.R-project.org/package=kableExtra">https://CRAN.R-project.org/package=kableExtra</a></p>
+<div id="ref-R-bookdown">
+<p>Xie, Y. (2020b). ‘Bookdown: Authoring books and technical documents with r markdown’. Available at: <a href="https://CRAN.R-project.org/package=bookdown">https://CRAN.R-project.org/package=bookdown</a></p>
 </div>
 </div>
 </div>

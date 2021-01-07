@@ -8,18 +8,43 @@
 
 ## ----setup--------------------------------------------------------------------
 
-  packages <- c("tidyverse"
+  packages <- c("base"
+                , "tidyverse"
                 , "bookdown"
-                , "kableExtra"
-                , "knitcitations"
+                , "knitr"
+                #, "kableExtra"
                 , "devtools"
+                , "fastcluster"
+                , "cluster"
+                , "randomForest"
                 )
 
   purrr::walk(packages,library,character.only=TRUE)
   
-  cleanbib()
+  write_bib(packages,"packageCitations.bib")
   
-  options("citation_format" = "pandoc")
+  refs <- bib2df::bib2df("packageCitations.bib")
+  
+  cite_package <- function(package,brack = TRUE,startText = "", endText = "") {
+    
+    thisRef <- refs %>%
+      dplyr::filter(grepl(paste0("-",package),BIBTEXKEY) | grepl(paste0("^",package),BIBTEXKEY)) %>%
+      dplyr::pull(BIBTEXKEY)
+    
+    starts <- if(brack) paste0("[",startText,"@") else paste0(startText,"@")
+    ends <- if(brack) paste0(endText,"]") else endText
+    
+    if(length(thisRef) > 1) {
+      
+      paste0(starts,paste0(thisRef,collapse = "; @"),ends)
+      
+      } else {
+        
+        paste0(starts,"R-",package,ends)
+        
+        }
+    
+  }
 
 
 
@@ -60,19 +85,13 @@
 ## ----packages-----------------------------------------------------------------
 
   kable(tibble(package = packages) %>%
-          dplyr::mutate(citation = map_chr(package,~citet(citation(.)))) %>%
-          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %>%
+          dplyr::mutate(citation = map_chr(package,cite_package,brack = FALSE)) %>%
+          dplyr::left_join(as_tibble(devtools::session_info(include_base = TRUE)$packages)) %>%
           dplyr::select(package,citation,loadedversion,date,source)
         , caption = paste0("R "
-                           , citep(citation("base"))
+                           , cite_package("base")
                            , " packages used in the production of this report"
                            )
         )
-
-
-
-## ----references---------------------------------------------------------------
-
-  knitcitations::write.bibtex(file="packageCitations.bib")
 
 
