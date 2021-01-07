@@ -1,6 +1,8 @@
 ---
 title: "Untitled"
 output: html_document
+bibliography: "packageCitations.bib"
+csl: BibStyle.csl
 ---
 
 ```{r GlobalOptions}
@@ -12,10 +14,17 @@ output: html_document
 ```
 
 ```{r setup}
+
+  packages <- c("tidyverse"
+                , "bookdown"
+                , "kableExtra"
+                , "knitcitations"
+                , "devtools"
+                )
+
+  purrr::walk(packages,library,character.only=TRUE)
   
-  library("tidyverse")
-  library("bookdown")
-  library("kableExtra")
+  cleanbib()
 
 ```
 
@@ -37,10 +46,13 @@ cars blah blah
 
 iris blah blah Figure \@ref(fig:chunk1).
 
+
+Very very open grassland: always *_Asparagus asparagoides_ with emergent frequent *_Asparagus declinatus_ and occasional _Acacia retinodes_, *_Olea europaea_, *_Pinus halepensis_, *_Osteospermum moniliferum_.
+
 ```{r chunk3}
   iris %>%
     dplyr::mutate(Species = if_else(Species == "setosa"
-                                    , paste0("\\*","_",Species,"_")
+                                    , paste0("*_",Species,"_")
                                     , as.character(Species)
                                     )
                   ) %>%
@@ -53,6 +65,10 @@ iris blah blah Figure \@ref(fig:chunk1).
 
 ---
 
+Some text with a citation `r citep(citation("knitr"))`.
+
+Another citation `r citep(citation("randomForest"))`.
+
 # Appendix
 
 ```{r code, code = readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)), echo = TRUE, eval=FALSE}
@@ -60,5 +76,29 @@ iris blah blah Figure \@ref(fig:chunk1).
 # Need to include options(knitr.duplicate.label = "allow") prior to knitting.
 
 # From https://github.com/yihui/knitr/issues/332
+
+```
+
+## Packages
+
+```{r packages}
+
+  kable(tibble(package = packages) %>%
+          dplyr::mutate(citation = map_chr(package,~citet(citation(.)))) %>%
+          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %>%
+          dplyr::select(package,citation,loadedversion,date,source)
+        , caption = paste0("R "
+                           , citep(citation("base"))
+                           , " packages used in the production of this report"
+                           )
+        )
+
+```
+
+# References
+
+```{r references}
+
+  knitcitations::write.bibtex(file="packageCitations.bib")
 
 ```

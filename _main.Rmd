@@ -1,12 +1,19 @@
-## ----GlobalOptions-----------------------------------------------------------------------------
+---
+title: "Untitled"
+output: html_document
+bibliography: "packageCitations.bib"
+csl: BibStyle.csl
+---
+
+```{r GlobalOptions}
   
   # Enables using readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)) to include code at end of document (otherwise 'duplicate labels' error)
 
   options(knitr.duplicate.label = 'allow')
 
+```
 
-
-## ----setup-------------------------------------------------------------------------------------
+```{r setup}
 
   packages <- c("tidyverse"
                 , "bookdown"
@@ -19,21 +26,30 @@
   
   cleanbib()
 
+```
 
+# Document
 
-## ----chunk1, fig.cap = "Figure 1 caption"------------------------------------------------------
+```{r chunk1, fig.cap = "Figure 1 caption"}
 
   plot(cars[,1:2])
 
+```
 
+cars blah blah
 
-## ----chunk2, fig.cap = "Figure 2 caption"------------------------------------------------------
+```{r chunk2, fig.cap = "Figure 2 caption"}
 
   plot(iris[,3:4])
 
+```
+
+iris blah blah Figure \@ref(fig:chunk1).
 
 
-## ----chunk3------------------------------------------------------------------------------------
+Very very open grassland: always *_Asparagus asparagoides_ with emergent frequent *_Asparagus declinatus_ and occasional _Acacia retinodes_, *_Olea europaea_, *_Pinus halepensis_, *_Osteospermum moniliferum_.
+
+```{r chunk3}
   iris %>%
     dplyr::mutate(Species = if_else(Species == "setosa"
                                     , paste0("*_",Species,"_")
@@ -45,17 +61,27 @@
           , booktabs = TRUE
           )
 
+```
 
+---
 
-## ----code, code = readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)), echo = TRUE, eval=FALSE----
-## 
-## # Need to include options(knitr.duplicate.label = "allow") prior to knitting.
-## 
-## # From https://github.com/yihui/knitr/issues/332
-## 
+Some text with a citation `r citep(citation("knitr"))`.
 
+Another citation `r citep(citation("randomForest"))`.
 
-## ----packages----------------------------------------------------------------------------------
+# Appendix
+
+```{r code, code = readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)), echo = TRUE, eval=FALSE}
+
+# Need to include options(knitr.duplicate.label = "allow") prior to knitting.
+
+# From https://github.com/yihui/knitr/issues/332
+
+```
+
+## Packages
+
+```{r packages}
 
   kable(tibble(package = packages) %>%
           dplyr::mutate(citation = map_chr(package,~citet(citation(.)))) %>%
@@ -67,10 +93,15 @@
                            )
         )
 
+```
 
+# References
 
-## ----references--------------------------------------------------------------------------------
+```{r references}
 
   knitcitations::write.bibtex(file="packageCitations.bib")
 
+```
+
+<!--chapter:end:test.Rmd-->
 

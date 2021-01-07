@@ -378,31 +378,38 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>options(knitr.duplicate.label = &#39;allow&#39;)</code></pre>
-<pre class="r"><code>  library(&quot;tidyverse&quot;)</code></pre>
-<pre><code>## Registered S3 methods overwritten by &#39;ggplot2&#39;:
-##   method         from 
-##   [.quosures     rlang
-##   c.quosures     rlang
-##   print.quosures rlang</code></pre>
-<pre><code>## Registered S3 method overwritten by &#39;rvest&#39;:
-##   method            from
-##   read_xml.response xml2</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.1     v purrr   0.3.3
-## v tibble  2.1.1     v dplyr   0.8.1
-## v tidyr   0.8.3     v stringr 1.4.0
+<pre class="r"><code>  # Enables using readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)) to include code at end of document (otherwise &#39;duplicate labels&#39; error)
+
+  options(knitr.duplicate.label = &#39;allow&#39;)</code></pre>
+<pre class="r"><code>  packages &lt;- c(&quot;tidyverse&quot;
+                , &quot;bookdown&quot;
+                , &quot;kableExtra&quot;
+                , &quot;knitcitations&quot;
+                , &quot;devtools&quot;
+                )
+
+  purrr::walk(packages,library,character.only=TRUE)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## -- Attaching packages -------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.0     v purrr   0.3.4
+## v tibble  3.0.3     v dplyr   1.0.1
+## v tidyr   1.1.1     v stringr 1.4.0
 ## v readr   1.3.1     v forcats 0.4.0</code></pre>
-<pre><code>## -- Conflicts -------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## Warning: package &#39;tibble&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## -- Conflicts ----------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>  library(&quot;bookdown&quot;)
-  library(&quot;kableExtra&quot;)</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;kableExtra&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:dplyr&#39;:
 ## 
 ##     group_rows</code></pre>
+<pre><code>## Warning: package &#39;usethis&#39; was built under R version 3.6.3</code></pre>
+<pre class="r"><code>  knitcitations::cleanbib()</code></pre>
 <div id="document" class="section level1">
 <h1>Document</h1>
 <pre class="r"><code>  plot(cars[,1:2])</code></pre>
@@ -421,9 +428,10 @@ Figure 2 caption
 </p>
 </div>
 <p>iris blah blah Figure @ref(fig:chunk1).</p>
+<p>Very very open grassland: always <em><em>Asparagus asparagoides</em> with emergent frequent </em>_Asparagus declinatus_ and occasional <em>Acacia retinodes</em>, <em><em>Olea europaea</em>, </em>_Pinus halepensis_, *<em>Osteospermum moniliferum</em>.</p>
 <pre class="r"><code>  iris %&gt;%
     dplyr::mutate(Species = if_else(Species == &quot;setosa&quot;
-                                    , paste0(&quot;\\*&quot;,&quot;_&quot;,Species,&quot;_&quot;)
+                                    , paste0(&quot;*_&quot;,Species,&quot;_&quot;)
                                     , as.character(Species)
                                     )
                   ) %&gt;%
@@ -1495,37 +1503,50 @@ Figure 2 caption
 </tbody>
 </table>
 <hr />
+<p>Some text with a citation (Xie, 2020; Xie, 2015; Xie, 2014).</p>
+<p>Another citation (Liaw and Wiener, 2002).</p>
 </div>
 <div id="appendix" class="section level1">
 <h1>Appendix</h1>
-<pre class="r"><code>## ----GlobalOptions-------------------------------------------------------
-options(knitr.duplicate.label = &#39;allow&#39;)
-
-
-## ----setup---------------------------------------------------------------
+<pre class="r"><code>## ----GlobalOptions------------------------------------------------------------
   
-  library(&quot;tidyverse&quot;)
-  library(&quot;bookdown&quot;)
-  library(&quot;kableExtra&quot;)
+  # Enables using readLines(knitr::purl(knitr::current_input(),documentation=1,quiet=T)) to include code at end of document (otherwise &#39;duplicate labels&#39; error)
+
+  options(knitr.duplicate.label = &#39;allow&#39;)
 
 
 
-## ----chunk1, fig.cap = &quot;Figure 1 caption&quot;--------------------------------
+## ----setup--------------------------------------------------------------------
+
+  packages &lt;- c(&quot;tidyverse&quot;
+                , &quot;bookdown&quot;
+                , &quot;kableExtra&quot;
+                , &quot;knitcitations&quot;
+                , &quot;devtools&quot;
+                )
+
+  purrr::walk(packages,library,character.only=TRUE)
+  
+  knitcitations::cleanbib()
+
+
+
+## ----chunk1, fig.cap = &quot;Figure 1 caption&quot;-------------------------------------
 
   plot(cars[,1:2])
 
 
 
-## ----chunk2, fig.cap = &quot;Figure 2 caption&quot;--------------------------------
+## ----chunk2, fig.cap = &quot;Figure 2 caption&quot;-------------------------------------
 
   plot(iris[,3:4])
 
 
 
-## ----chunk3--------------------------------------------------------------
+## ----chunk3-------------------------------------------------------------------
   iris %&gt;%
     dplyr::mutate(Species = if_else(Species == &quot;setosa&quot;
-                                    , paste0(&quot;\\*&quot;,&quot;_&quot;,Species,&quot;_&quot;)
+                                    , paste0(&quot;*_&quot;,Species,&quot;_&quot;)
                                     , as.character(Species)
                                     )
                   ) %&gt;%
@@ -1541,7 +1562,161 @@ options(knitr.duplicate.label = &#39;allow&#39;)
 ## # Need to include options(knitr.duplicate.label = &quot;allow&quot;) prior to knitting.
 ## 
 ## # From https://github.com/yihui/knitr/issues/332
-## </code></pre>
+## 
+
+
+## ----packages-----------------------------------------------------------------
+
+  kable(tibble(package = packages) %&gt;%
+          dplyr::mutate(citation = map_chr(package,~citep(citation(.)))) %&gt;%
+          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %&gt;%
+          dplyr::select(package,citation,loadedversion,date,source)
+        , caption = paste0(&quot;R &quot;
+                           , citep(citation(&quot;base&quot;))
+                           , &quot; packages used in the production of this report&quot;
+                           )
+        )
+
+
+
+## ----references---------------------------------------------------------------
+
+  knitcitations::write.bibtex(file=&quot;packageCitations.bib&quot;)</code></pre>
+<div id="packages" class="section level2">
+<h2>Packages</h2>
+<pre class="r"><code>  kable(tibble(package = packages) %&gt;%
+          dplyr::mutate(citation = map_chr(package,~citep(citation(.)))) %&gt;%
+          dplyr::left_join(as_tibble(session_info(include_base = TRUE)$packages)) %&gt;%
+          dplyr::select(package,citation,loadedversion,date,source)
+        , caption = paste0(&quot;R &quot;
+                           , citep(citation(&quot;base&quot;))
+                           , &quot; packages used in the production of this report&quot;
+                           )
+        )</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `citation`.
+## x no date field in DESCRIPTION file of package &#39;knitcitations&#39;
+## i Input `citation` is `map_chr(package, ~citep(citation(.)))`.</code></pre>
+<pre><code>## Warning in citation(.): no date field in DESCRIPTION file of package
+## &#39;knitcitations&#39;</code></pre>
+<pre><code>## Joining, by = &quot;package&quot;</code></pre>
+<table>
+<caption>
+R (R Core Team, 2019) packages used in the production of this report
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+package
+</th>
+<th style="text-align:left;">
+citation
+</th>
+<th style="text-align:left;">
+loadedversion
+</th>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:left;">
+source
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+tidyverse
+</td>
+<td style="text-align:left;">
+(Wickham, Averick, Bryan, Chang, McGowan, François, Grolemund, Hayes, Henry, Hester, Kuhn, Pedersen, Miller, Bache, Müller, Ooms, Robinson, Seidel, Spinu, Takahashi, Vaughan, Wilke, Woo, and Yutani, 2019)
+</td>
+<td style="text-align:left;">
+1.3.0
+</td>
+<td style="text-align:left;">
+2019-11-21
+</td>
+<td style="text-align:left;">
+CRAN (R 3.6.3)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bookdown
+</td>
+<td style="text-align:left;">
+(Xie, 2020; Xie, 2016)
+</td>
+<td style="text-align:left;">
+0.17
+</td>
+<td style="text-align:left;">
+2020-01-11
+</td>
+<td style="text-align:left;">
+CRAN (R 3.6.2)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+kableExtra
+</td>
+<td style="text-align:left;">
+(Zhu, 2019)
+</td>
+<td style="text-align:left;">
+1.1.0
+</td>
+<td style="text-align:left;">
+2019-03-16
+</td>
+<td style="text-align:left;">
+CRAN (R 3.6.0)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+knitcitations
+</td>
+<td style="text-align:left;">
+(Boettiger, 2021)
+</td>
+<td style="text-align:left;">
+1.0.12
+</td>
+<td style="text-align:left;">
+2021-01-07
+</td>
+<td style="text-align:left;">
+Github (<a href="mailto:cboettig/knitcitations@c5b3ece" class="email">cboettig/knitcitations@c5b3ece</a>)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+devtools
+</td>
+<td style="text-align:left;">
+(Wickham, Hester, and Chang, 2019)
+</td>
+<td style="text-align:left;">
+2.0.2
+</td>
+<td style="text-align:left;">
+2019-04-08
+</td>
+<td style="text-align:left;">
+CRAN (R 3.6.0)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<pre class="r"><code>  knitcitations::write.bibtex(file=&quot;packageCitations.bib&quot;)</code></pre>
+<pre><code>## Writing 11 Bibtex entries ... OK
+## Results written to file &#39;packageCitations.bib&#39;</code></pre>
 </div>
 
 
