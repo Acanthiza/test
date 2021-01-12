@@ -9,42 +9,57 @@
 ## ----setup--------------------------------------------------------------------
 
   packages <- c("base"
-                , "tidyverse"
-                , "bookdown"
-                , "knitr"
-                #, "kableExtra"
-                , "devtools"
-                , "fastcluster"
-                , "cluster"
-                , "randomForest"
+                ,"tidyverse"
+                ,"bookdown"
+                ,"knitr"
+                ,"fs"
+                ,"devtools"
+                ,"fastcluster"
+                ,"cluster"
+                ,"randomForest"
+                ,"DBI"
                 )
 
   purrr::walk(packages,library,character.only=TRUE)
   
-  write_bib(packages,"packageCitations.bib")
+  testUnderscore <- "Alinytjara Wilu\u1E5Fara"
   
-  refs <- bib2df::bib2df("packageCitations.bib")
+
+
+## ----functions----------------------------------------------------------------
+
+  #-------Load functions-------
+    
+  commonFiles <- path("..","template","toCommon")
   
-  cite_package <- function(package,brack = TRUE,startText = "", endText = "") {
+  if(file.exists(commonFiles)){
     
-    thisRef <- refs %>%
-      dplyr::filter(grepl(paste0("-",package),BIBTEXKEY) | grepl(paste0("^",package),BIBTEXKEY)) %>%
-      dplyr::pull(BIBTEXKEY)
-    
-    starts <- if(brack) paste0("[",startText,"@") else paste0(startText,"@")
-    ends <- if(brack) paste0(endText,"]") else endText
-    
-    if(length(thisRef) > 1) {
-      
-      paste0(starts,paste0(thisRef,collapse = "; @"),ends)
-      
-      } else {
-        
-        paste0(starts,"R-",package,ends)
-        
-        }
+    files <- dir_ls(commonFiles)
+    newFiles <- files %>% gsub(commonFiles,path("common"),.)
+    dir_create("common")
+    walk2(files,newFiles,file_copy,overwrite=TRUE)
     
   }
+  
+  source("common/functions.R") # these are generic functions (e.g. vec_to_sentence)
+
+
+
+## ----references---------------------------------------------------------------
+
+#---------References-------
+  
+  packageBibFile <- "packageCitations.bib"
+  
+  write_bib(packages
+            ,file=packageBibFile
+            ,tweak=TRUE
+            ,width=1000
+            )
+  
+  refs <- fix_bib(packageBibFile,isPackageBib = TRUE)
+  
+  #fix_bib("common/refs.bib")
 
 
 
@@ -62,6 +77,7 @@
 
 ## ----chunk3-------------------------------------------------------------------
   iris %>%
+    dplyr::sample_n(15) %>%
     dplyr::mutate(Species = if_else(Species == "setosa"
                                     , paste0("*_",Species,"_")
                                     , as.character(Species)

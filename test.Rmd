@@ -1,7 +1,9 @@
 ---
 title: "Untitled"
-output: html_document
-bibliography: "packageCitations.bib"
+output:
+  word_document:
+    reference_docx: "common/Styles.docx"
+bibliography: ["common/refs.bib","packageCitations.bib"]
 csl: "BibStyle.csl"
 ---
 
@@ -16,49 +18,61 @@ csl: "BibStyle.csl"
 ```{r setup}
 
   packages <- c("base"
-                , "tidyverse"
-                , "bookdown"
-                , "knitr"
-                #, "kableExtra"
-                , "devtools"
-                , "fastcluster"
-                , "cluster"
-                , "randomForest"
+                ,"tidyverse"
+                ,"bookdown"
+                ,"knitr"
+                ,"fs"
+                ,"devtools"
+                ,"fastcluster"
+                ,"cluster"
+                ,"randomForest"
+                ,"DBI"
                 )
 
   purrr::walk(packages,library,character.only=TRUE)
   
-  write_bib(packages,"packageCitations.bib")
+  testUnderscore <- "Alinytjara Wilu\u1E5Fara"
   
-  refs <- bib2df::bib2df("packageCitations.bib")
+```
+
+I wonder if this will work: `r testUnderscore`.
+
+```{r functions}
+
+  #-------Load functions-------
+    
+  commonFiles <- path("..","template","toCommon")
   
-  cite_package <- function(package,brack = TRUE,startText = "", endText = "") {
+  if(file.exists(commonFiles)){
     
-    thisRef <- refs %>%
-      dplyr::filter(grepl(paste0("-",package),BIBTEXKEY) | grepl(paste0("^",package),BIBTEXKEY)) %>%
-      dplyr::pull(BIBTEXKEY)
-    
-    starts <- if(brack) paste0("[",startText,"@") else paste0(startText,"@")
-    ends <- if(brack) paste0(endText,"]") else endText
-    
-    if(length(thisRef) > 1) {
-      
-      paste0(starts,paste0(thisRef,collapse = "; @"),ends)
-      
-      } else {
-        
-        paste0(starts,"R-",package,ends)
-        
-        }
+    files <- dir_ls(commonFiles)
+    newFiles <- files %>% gsub(commonFiles,path("common"),.)
+    dir_create("common")
+    walk2(files,newFiles,file_copy,overwrite=TRUE)
     
   }
+  
+  source("common/functions.R") # these are generic functions (e.g. vec_to_sentence)
 
 ```
 
-BIBTEXKEY <- refs$BIBTEXKEY
+```{r references}
 
+#---------References-------
+  
+  packageBibFile <- "packageCitations.bib"
+  
+  write_bib(packages
+            ,file=packageBibFile
+            ,tweak=TRUE
+            ,width=1000
+            )
+  
+  refs <- fix_bib(packageBibFile,isPackageBib = TRUE)
+  
+  #fix_bib("common/refs.bib")
 
-
+```
 
 # Document
 
@@ -83,6 +97,7 @@ Very very open grassland: always *_Asparagus asparagoides_ with emergent frequen
 
 ```{r chunk3}
   iris %>%
+    dplyr::sample_n(15) %>%
     dplyr::mutate(Species = if_else(Species == "setosa"
                                     , paste0("*_",Species,"_")
                                     , as.character(Species)
@@ -104,6 +119,13 @@ Another citation `r cite_package("randomForest")`.
 Accents on author name `r cite_package("fastcluster")`.
 
 What about `cluster` `r cite_package("cluster")`.
+
+A citation from `common/refs.bib` rather than `packageCitations.bib`:
+
+* book section [@RN3727]
+* journal [@RN1186]
+* report [@RN3492]
+* book [@RN627]
 
 # Appendix
 

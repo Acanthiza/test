@@ -421,11 +421,12 @@ summary {
                 , &quot;tidyverse&quot;
                 , &quot;bookdown&quot;
                 , &quot;knitr&quot;
-                #, &quot;kableExtra&quot;
+                , &quot;fs&quot;
                 , &quot;devtools&quot;
                 , &quot;fastcluster&quot;
                 , &quot;cluster&quot;
                 , &quot;randomForest&quot;
+                , &quot;DBI&quot;
                 )
 
   purrr::walk(packages,library,character.only=TRUE)</code></pre>
@@ -437,6 +438,7 @@ summary {
 <pre><code>## -- Conflicts ------------------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre><code>## Warning: package &#39;fs&#39; was built under R version 4.0.3</code></pre>
 <pre><code>## Loading required package: usethis</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;fastcluster&#39;</code></pre>
@@ -453,35 +455,33 @@ summary {
 <pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
 ## 
 ##     margin</code></pre>
-<pre class="r"><code>  write_bib(packages,&quot;packageCitations.bib&quot;)
+<pre class="r"><code>  #-------Load functions-------
+    
+  commonFiles &lt;- path(&quot;..&quot;,&quot;template&quot;,&quot;toCommon&quot;)
   
-  refs &lt;- bib2df::bib2df(&quot;packageCitations.bib&quot;)</code></pre>
-<pre><code>## Warning: `as_data_frame()` is deprecated as of tibble 2.0.0.
-## Please use `as_tibble()` instead.
-## The signature and semantics have changed, see `?as_tibble`.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
-<pre class="r"><code>  cite_package &lt;- function(package,brack = TRUE,startText = &quot;&quot;, endText = &quot;&quot;) {
+  if(file.exists(commonFiles)){
     
-    thisRef &lt;- refs %&gt;%
-      dplyr::filter(grepl(paste0(&quot;-&quot;,package),BIBTEXKEY) | grepl(paste0(&quot;^&quot;,package),BIBTEXKEY)) %&gt;%
-      dplyr::pull(BIBTEXKEY)
+    files &lt;- dir_ls(commonFiles)
+    newFiles &lt;- files %&gt;% gsub(commonFiles,path(&quot;common&quot;),.)
+    dir_create(&quot;common&quot;)
+    walk2(files,newFiles,file_copy,overwrite=TRUE)
     
-    starts &lt;- if(brack) paste0(&quot;[&quot;,startText,&quot;@&quot;) else paste0(startText,&quot;@&quot;)
-    ends &lt;- if(brack) paste0(endText,&quot;]&quot;) else endText
-    
-    if(length(thisRef) &gt; 1) {
-      
-      paste0(starts,paste0(thisRef,collapse = &quot;; @&quot;),ends)
-      
-      } else {
-        
-        paste0(starts,&quot;R-&quot;,package,ends)
-        
-        }
-    
-  }</code></pre>
-<p>BIBTEXKEY &lt;- refs$BIBTEXKEY</p>
+  }
+  
+  source(&quot;common/functions.R&quot;) # these are generic functions (e.g. vec_to_sentence)</code></pre>
+<pre class="r"><code>#---------References-------
+  
+  packageBibFile &lt;- &quot;packageCitations.bib&quot;
+  
+  write_bib(packages
+            ,file=packageBibFile
+            ,tweak=TRUE
+            ,width=1000
+            )
+  
+  refs &lt;- fix_bib(packageBibFile,isPackageBib = TRUE)
+  
+  #fix_bib(&quot;common/refs.bib&quot;)</code></pre>
 <div id="document" class="section level1">
 <h1>Document</h1>
 <pre class="r"><code>  plot(cars[,1:2])</code></pre>
@@ -502,6 +502,7 @@ Figure 2 caption
 <p>iris blah blah Figure @ref(fig:chunk1).</p>
 <p>Very very open grassland: always <em><em>Asparagus asparagoides</em> with emergent frequent </em>_Asparagus declinatus_ and occasional <em>Acacia retinodes</em>, <em><em>Olea europaea</em>, </em>_Pinus halepensis_, *<em>Osteospermum moniliferum</em>.</p>
 <pre class="r"><code>  iris %&gt;%
+    dplyr::sample_n(15) %&gt;%
     dplyr::mutate(Species = if_else(Species == &quot;setosa&quot;
                                     , paste0(&quot;*_&quot;,Species,&quot;_&quot;)
                                     , as.character(Species)
@@ -524,249 +525,53 @@ Figure 2 caption
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">5.1</td>
-<td align="right">3.5</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.9</td>
-<td align="right">3.0</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.7</td>
-<td align="right">3.2</td>
-<td align="right">1.3</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.6</td>
-<td align="right">3.1</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.0</td>
-<td align="right">3.6</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.4</td>
-<td align="right">3.9</td>
-<td align="right">1.7</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.6</td>
-<td align="right">3.4</td>
-<td align="right">1.4</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.0</td>
-<td align="right">3.4</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
+<td align="right">5.5</td>
+<td align="right">2.6</td>
 <td align="right">4.4</td>
-<td align="right">2.9</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.9</td>
-<td align="right">3.1</td>
-<td align="right">1.5</td>
-<td align="right">0.1</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.4</td>
-<td align="right">3.7</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.8</td>
-<td align="right">3.4</td>
-<td align="right">1.6</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.8</td>
-<td align="right">3.0</td>
-<td align="right">1.4</td>
-<td align="right">0.1</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.3</td>
-<td align="right">3.0</td>
-<td align="right">1.1</td>
-<td align="right">0.1</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.8</td>
-<td align="right">4.0</td>
 <td align="right">1.2</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
+<td align="left">versicolor</td>
 </tr>
 <tr class="even">
-<td align="right">5.7</td>
 <td align="right">4.4</td>
-<td align="right">1.5</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.4</td>
-<td align="right">3.9</td>
+<td align="right">3.0</td>
 <td align="right">1.3</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.1</td>
-<td align="right">3.5</td>
-<td align="right">1.4</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.7</td>
-<td align="right">3.8</td>
-<td align="right">1.7</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.1</td>
-<td align="right">3.8</td>
-<td align="right">1.5</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.4</td>
-<td align="right">3.4</td>
-<td align="right">1.7</td>
 <td align="right">0.2</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
-<tr class="even">
-<td align="right">5.1</td>
-<td align="right">3.7</td>
-<td align="right">1.5</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
 <tr class="odd">
-<td align="right">4.6</td>
-<td align="right">3.6</td>
-<td align="right">1.0</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
+<td align="right">5.5</td>
+<td align="right">2.3</td>
+<td align="right">4.0</td>
+<td align="right">1.3</td>
+<td align="left">versicolor</td>
 </tr>
 <tr class="even">
-<td align="right">5.1</td>
-<td align="right">3.3</td>
-<td align="right">1.7</td>
-<td align="right">0.5</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
 <td align="right">4.8</td>
 <td align="right">3.4</td>
 <td align="right">1.9</td>
 <td align="right">0.2</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
-<tr class="even">
-<td align="right">5.0</td>
-<td align="right">3.0</td>
-<td align="right">1.6</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
 <tr class="odd">
-<td align="right">5.0</td>
-<td align="right">3.4</td>
-<td align="right">1.6</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.2</td>
-<td align="right">3.5</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.2</td>
-<td align="right">3.4</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.7</td>
-<td align="right">3.2</td>
-<td align="right">1.6</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.8</td>
-<td align="right">3.1</td>
-<td align="right">1.6</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
 <td align="right">5.4</td>
-<td align="right">3.4</td>
+<td align="right">3.0</td>
+<td align="right">4.5</td>
 <td align="right">1.5</td>
-<td align="right">0.4</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.2</td>
-<td align="right">4.1</td>
-<td align="right">1.5</td>
-<td align="right">0.1</td>
-<td align="left">*<em>setosa</em></td>
+<td align="left">versicolor</td>
 </tr>
 <tr class="even">
-<td align="right">5.5</td>
-<td align="right">4.2</td>
-<td align="right">1.4</td>
+<td align="right">4.8</td>
+<td align="right">3.4</td>
+<td align="right">1.6</td>
 <td align="right">0.2</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
 <tr class="odd">
-<td align="right">4.9</td>
-<td align="right">3.1</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
+<td align="right">6.1</td>
+<td align="right">3.0</td>
+<td align="right">4.6</td>
+<td align="right">1.4</td>
+<td align="left">versicolor</td>
 </tr>
 <tr class="even">
 <td align="right">5.0</td>
@@ -776,810 +581,68 @@ Figure 2 caption
 <td align="left">*<em>setosa</em></td>
 </tr>
 <tr class="odd">
-<td align="right">5.5</td>
-<td align="right">3.5</td>
-<td align="right">1.3</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.9</td>
-<td align="right">3.6</td>
-<td align="right">1.4</td>
-<td align="right">0.1</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.4</td>
-<td align="right">3.0</td>
-<td align="right">1.3</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.1</td>
-<td align="right">3.4</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.0</td>
-<td align="right">3.5</td>
-<td align="right">1.3</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.5</td>
-<td align="right">2.3</td>
-<td align="right">1.3</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">4.4</td>
+<td align="right">4.7</td>
 <td align="right">3.2</td>
 <td align="right">1.3</td>
 <td align="right">0.2</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
 <tr class="even">
-<td align="right">5.0</td>
-<td align="right">3.5</td>
-<td align="right">1.6</td>
-<td align="right">0.6</td>
+<td align="right">5.4</td>
+<td align="right">3.4</td>
+<td align="right">1.7</td>
+<td align="right">0.2</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
 <tr class="odd">
-<td align="right">5.1</td>
-<td align="right">3.8</td>
-<td align="right">1.9</td>
+<td align="right">6.1</td>
+<td align="right">2.9</td>
+<td align="right">4.7</td>
+<td align="right">1.4</td>
+<td align="left">versicolor</td>
+</tr>
+<tr class="even">
+<td align="right">5.4</td>
+<td align="right">3.9</td>
+<td align="right">1.3</td>
 <td align="right">0.4</td>
 <td align="left">*<em>setosa</em></td>
 </tr>
-<tr class="even">
-<td align="right">4.8</td>
-<td align="right">3.0</td>
-<td align="right">1.4</td>
-<td align="right">0.3</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
 <tr class="odd">
-<td align="right">5.1</td>
-<td align="right">3.8</td>
-<td align="right">1.6</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">4.6</td>
-<td align="right">3.2</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">5.3</td>
-<td align="right">3.7</td>
-<td align="right">1.5</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="even">
-<td align="right">5.0</td>
-<td align="right">3.3</td>
-<td align="right">1.4</td>
-<td align="right">0.2</td>
-<td align="left">*<em>setosa</em></td>
-</tr>
-<tr class="odd">
-<td align="right">7.0</td>
-<td align="right">3.2</td>
-<td align="right">4.7</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.4</td>
-<td align="right">3.2</td>
-<td align="right">4.5</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.9</td>
-<td align="right">3.1</td>
-<td align="right">4.9</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.5</td>
-<td align="right">2.3</td>
-<td align="right">4.0</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.5</td>
-<td align="right">2.8</td>
-<td align="right">4.6</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.7</td>
-<td align="right">2.8</td>
-<td align="right">4.5</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.3</td>
-<td align="right">3.3</td>
-<td align="right">4.7</td>
-<td align="right">1.6</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">4.9</td>
-<td align="right">2.4</td>
-<td align="right">3.3</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.6</td>
-<td align="right">2.9</td>
-<td align="right">4.6</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.2</td>
-<td align="right">2.7</td>
-<td align="right">3.9</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.0</td>
-<td align="right">2.0</td>
-<td align="right">3.5</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
 <td align="right">5.9</td>
 <td align="right">3.0</td>
 <td align="right">4.2</td>
 <td align="right">1.5</td>
 <td align="left">versicolor</td>
 </tr>
-<tr class="odd">
-<td align="right">6.0</td>
-<td align="right">2.2</td>
-<td align="right">4.0</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
 <tr class="even">
-<td align="right">6.1</td>
-<td align="right">2.9</td>
-<td align="right">4.7</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.6</td>
-<td align="right">2.9</td>
-<td align="right">3.6</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.7</td>
-<td align="right">3.1</td>
-<td align="right">4.4</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.6</td>
-<td align="right">3.0</td>
-<td align="right">4.5</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.8</td>
-<td align="right">2.7</td>
-<td align="right">4.1</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.2</td>
-<td align="right">2.2</td>
-<td align="right">4.5</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.6</td>
-<td align="right">2.5</td>
-<td align="right">3.9</td>
-<td align="right">1.1</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.9</td>
-<td align="right">3.2</td>
-<td align="right">4.8</td>
-<td align="right">1.8</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.1</td>
-<td align="right">2.8</td>
-<td align="right">4.0</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.3</td>
-<td align="right">2.5</td>
-<td align="right">4.9</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.1</td>
-<td align="right">2.8</td>
-<td align="right">4.7</td>
-<td align="right">1.2</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.4</td>
-<td align="right">2.9</td>
-<td align="right">4.3</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.6</td>
-<td align="right">3.0</td>
-<td align="right">4.4</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.8</td>
-<td align="right">2.8</td>
-<td align="right">4.8</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.7</td>
-<td align="right">3.0</td>
-<td align="right">5.0</td>
-<td align="right">1.7</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.0</td>
-<td align="right">2.9</td>
-<td align="right">4.5</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.7</td>
-<td align="right">2.6</td>
-<td align="right">3.5</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.5</td>
-<td align="right">2.4</td>
-<td align="right">3.8</td>
-<td align="right">1.1</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.5</td>
-<td align="right">2.4</td>
-<td align="right">3.7</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.8</td>
-<td align="right">2.7</td>
-<td align="right">3.9</td>
-<td align="right">1.2</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.0</td>
-<td align="right">2.7</td>
-<td align="right">5.1</td>
-<td align="right">1.6</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.4</td>
-<td align="right">3.0</td>
-<td align="right">4.5</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.0</td>
-<td align="right">3.4</td>
-<td align="right">4.5</td>
-<td align="right">1.6</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.7</td>
-<td align="right">3.1</td>
-<td align="right">4.7</td>
-<td align="right">1.5</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.3</td>
-<td align="right">2.3</td>
-<td align="right">4.4</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.6</td>
-<td align="right">3.0</td>
-<td align="right">4.1</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.5</td>
-<td align="right">2.5</td>
-<td align="right">4.0</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.5</td>
-<td align="right">2.6</td>
-<td align="right">4.4</td>
-<td align="right">1.2</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.1</td>
-<td align="right">3.0</td>
-<td align="right">4.6</td>
-<td align="right">1.4</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.8</td>
-<td align="right">2.6</td>
-<td align="right">4.0</td>
-<td align="right">1.2</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.0</td>
-<td align="right">2.3</td>
-<td align="right">3.3</td>
-<td align="right">1.0</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.6</td>
-<td align="right">2.7</td>
-<td align="right">4.2</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.7</td>
-<td align="right">3.0</td>
-<td align="right">4.2</td>
-<td align="right">1.2</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.7</td>
-<td align="right">2.9</td>
-<td align="right">4.2</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">6.2</td>
-<td align="right">2.9</td>
-<td align="right">4.3</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">5.1</td>
-<td align="right">2.5</td>
-<td align="right">3.0</td>
-<td align="right">1.1</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="even">
-<td align="right">5.7</td>
-<td align="right">2.8</td>
-<td align="right">4.1</td>
-<td align="right">1.3</td>
-<td align="left">versicolor</td>
-</tr>
-<tr class="odd">
-<td align="right">6.3</td>
-<td align="right">3.3</td>
-<td align="right">6.0</td>
-<td align="right">2.5</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">5.8</td>
-<td align="right">2.7</td>
-<td align="right">5.1</td>
-<td align="right">1.9</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">7.1</td>
-<td align="right">3.0</td>
-<td align="right">5.9</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.3</td>
-<td align="right">2.9</td>
-<td align="right">5.6</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.5</td>
-<td align="right">3.0</td>
-<td align="right">5.8</td>
-<td align="right">2.2</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.6</td>
-<td align="right">3.0</td>
-<td align="right">6.6</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">4.9</td>
-<td align="right">2.5</td>
-<td align="right">4.5</td>
-<td align="right">1.7</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.3</td>
-<td align="right">2.9</td>
-<td align="right">6.3</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.7</td>
-<td align="right">2.5</td>
-<td align="right">5.8</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.2</td>
-<td align="right">3.6</td>
-<td align="right">6.1</td>
-<td align="right">2.5</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.5</td>
-<td align="right">3.2</td>
-<td align="right">5.1</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.4</td>
-<td align="right">2.7</td>
-<td align="right">5.3</td>
-<td align="right">1.9</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.8</td>
-<td align="right">3.0</td>
-<td align="right">5.5</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">5.7</td>
-<td align="right">2.5</td>
-<td align="right">5.0</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">5.8</td>
-<td align="right">2.8</td>
-<td align="right">5.1</td>
-<td align="right">2.4</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.4</td>
-<td align="right">3.2</td>
-<td align="right">5.3</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.5</td>
-<td align="right">3.0</td>
-<td align="right">5.5</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.7</td>
-<td align="right">3.8</td>
-<td align="right">6.7</td>
-<td align="right">2.2</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">7.7</td>
-<td align="right">2.6</td>
-<td align="right">6.9</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.0</td>
-<td align="right">2.2</td>
-<td align="right">5.0</td>
-<td align="right">1.5</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.9</td>
-<td align="right">3.2</td>
-<td align="right">5.7</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">5.6</td>
-<td align="right">2.8</td>
-<td align="right">4.9</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">7.7</td>
-<td align="right">2.8</td>
-<td align="right">6.7</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.3</td>
-<td align="right">2.7</td>
-<td align="right">4.9</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.7</td>
-<td align="right">3.3</td>
-<td align="right">5.7</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.2</td>
-<td align="right">3.2</td>
-<td align="right">6.0</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.2</td>
-<td align="right">2.8</td>
-<td align="right">4.8</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.1</td>
-<td align="right">3.0</td>
-<td align="right">4.9</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.4</td>
-<td align="right">2.8</td>
-<td align="right">5.6</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.2</td>
-<td align="right">3.0</td>
-<td align="right">5.8</td>
-<td align="right">1.6</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
 <td align="right">7.4</td>
 <td align="right">2.8</td>
 <td align="right">6.1</td>
 <td align="right">1.9</td>
 <td align="left">virginica</td>
 </tr>
-<tr class="even">
-<td align="right">7.9</td>
-<td align="right">3.8</td>
-<td align="right">6.4</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
 <tr class="odd">
-<td align="right">6.4</td>
-<td align="right">2.8</td>
-<td align="right">5.6</td>
-<td align="right">2.2</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.3</td>
-<td align="right">2.8</td>
-<td align="right">5.1</td>
+<td align="right">4.9</td>
+<td align="right">3.1</td>
 <td align="right">1.5</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.1</td>
-<td align="right">2.6</td>
-<td align="right">5.6</td>
-<td align="right">1.4</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">7.7</td>
-<td align="right">3.0</td>
-<td align="right">6.1</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.3</td>
-<td align="right">3.4</td>
-<td align="right">5.6</td>
-<td align="right">2.4</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.4</td>
-<td align="right">3.1</td>
-<td align="right">5.5</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.0</td>
-<td align="right">3.0</td>
-<td align="right">4.8</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.9</td>
-<td align="right">3.1</td>
-<td align="right">5.4</td>
-<td align="right">2.1</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.7</td>
-<td align="right">3.1</td>
-<td align="right">5.6</td>
-<td align="right">2.4</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.9</td>
-<td align="right">3.1</td>
-<td align="right">5.1</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">5.8</td>
-<td align="right">2.7</td>
-<td align="right">5.1</td>
-<td align="right">1.9</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.8</td>
-<td align="right">3.2</td>
-<td align="right">5.9</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.7</td>
-<td align="right">3.3</td>
-<td align="right">5.7</td>
-<td align="right">2.5</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.7</td>
-<td align="right">3.0</td>
-<td align="right">5.2</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.3</td>
-<td align="right">2.5</td>
-<td align="right">5.0</td>
-<td align="right">1.9</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">6.5</td>
-<td align="right">3.0</td>
-<td align="right">5.2</td>
-<td align="right">2.0</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="odd">
-<td align="right">6.2</td>
-<td align="right">3.4</td>
-<td align="right">5.4</td>
-<td align="right">2.3</td>
-<td align="left">virginica</td>
-</tr>
-<tr class="even">
-<td align="right">5.9</td>
-<td align="right">3.0</td>
-<td align="right">5.1</td>
-<td align="right">1.8</td>
-<td align="left">virginica</td>
+<td align="right">0.1</td>
+<td align="left">*<em>setosa</em></td>
 </tr>
 </tbody>
 </table>
 <hr />
 <p>Some text with a citation <span class="citation">(Xie 2014; Xie 2015; Xie 2020a)</span>.</p>
-<p>Another citation <span class="citation">(Liaw and Wiener 2002; Leo Breiman <em>et al.</em> 2018)</span>.</p>
+<p>Another citation <span class="citation">(Liaw and Wiener 2002; Breiman <em>et al.</em> 2018)</span>.</p>
 <p>Accents on author name <span class="citation">(Müllner 2013; Müllner 2018)</span>.</p>
 <p>What about <code>cluster</code> <span class="citation">(Maechler <em>et al.</em> 2019)</span>.</p>
+<p>A citation from <code>common/refs.bib</code> rather than <code>packageCitations.bib</code>:</p>
+<ul>
+<li>book section <span class="citation">(Hobbs <em>et al.</em> 2013)</span></li>
+<li>journal <span class="citation">(Hobbs and Norton 1996)</span></li>
+<li>report <span class="citation">(Rogers 2010 ║)</span></li>
+<li>book <span class="citation">(Robinson <em>et al.</em> 1996)</span></li>
+</ul>
 </div>
 <div id="appendix" class="section level1">
 <h1>Appendix</h1>
@@ -1597,39 +660,53 @@ Figure 2 caption
                 , &quot;tidyverse&quot;
                 , &quot;bookdown&quot;
                 , &quot;knitr&quot;
-                #, &quot;kableExtra&quot;
+                , &quot;fs&quot;
                 , &quot;devtools&quot;
                 , &quot;fastcluster&quot;
                 , &quot;cluster&quot;
                 , &quot;randomForest&quot;
+                , &quot;DBI&quot;
                 )
 
   purrr::walk(packages,library,character.only=TRUE)
   
-  write_bib(packages,&quot;packageCitations.bib&quot;)
   
-  refs &lt;- bib2df::bib2df(&quot;packageCitations.bib&quot;)
+
+
+## ----functions----------------------------------------------------------------
+
+  #-------Load functions-------
+    
+  commonFiles &lt;- path(&quot;..&quot;,&quot;template&quot;,&quot;toCommon&quot;)
   
-  cite_package &lt;- function(package,brack = TRUE,startText = &quot;&quot;, endText = &quot;&quot;) {
+  if(file.exists(commonFiles)){
     
-    thisRef &lt;- refs %&gt;%
-      dplyr::filter(grepl(paste0(&quot;-&quot;,package),BIBTEXKEY) | grepl(paste0(&quot;^&quot;,package),BIBTEXKEY)) %&gt;%
-      dplyr::pull(BIBTEXKEY)
-    
-    starts &lt;- if(brack) paste0(&quot;[&quot;,startText,&quot;@&quot;) else paste0(startText,&quot;@&quot;)
-    ends &lt;- if(brack) paste0(endText,&quot;]&quot;) else endText
-    
-    if(length(thisRef) &gt; 1) {
-      
-      paste0(starts,paste0(thisRef,collapse = &quot;; @&quot;),ends)
-      
-      } else {
-        
-        paste0(starts,&quot;R-&quot;,package,ends)
-        
-        }
+    files &lt;- dir_ls(commonFiles)
+    newFiles &lt;- files %&gt;% gsub(commonFiles,path(&quot;common&quot;),.)
+    dir_create(&quot;common&quot;)
+    walk2(files,newFiles,file_copy,overwrite=TRUE)
     
   }
+  
+  source(&quot;common/functions.R&quot;) # these are generic functions (e.g. vec_to_sentence)
+
+
+
+## ----references---------------------------------------------------------------
+
+#---------References-------
+  
+  packageBibFile &lt;- &quot;packageCitations.bib&quot;
+  
+  write_bib(packages
+            ,file=packageBibFile
+            ,tweak=TRUE
+            ,width=1000
+            )
+  
+  refs &lt;- fix_bib(packageBibFile,isPackageBib = TRUE)
+  
+  #fix_bib(&quot;common/refs.bib&quot;)
 
 
 
@@ -1647,6 +724,7 @@ Figure 2 caption
 
 ## ----chunk3-------------------------------------------------------------------
   iris %&gt;%
+    dplyr::sample_n(15) %&gt;%
     dplyr::mutate(Species = if_else(Species == &quot;setosa&quot;
                                     , paste0(&quot;*_&quot;,Species,&quot;_&quot;)
                                     , as.character(Species)
@@ -1738,31 +816,45 @@ Figure 2 caption
 <td align="left">CRAN (R 4.0.2)</td>
 </tr>
 <tr class="odd">
+<td align="left">fs</td>
+<td align="left"><span class="citation">Hester and Wickham (2020)</span></td>
+<td align="left">1.5.0</td>
+<td align="left">2020-07-31</td>
+<td align="left">CRAN (R 4.0.3)</td>
+</tr>
+<tr class="even">
 <td align="left">devtools</td>
 <td align="left"><span class="citation">Wickham <em>et al.</em> (2020)</span></td>
 <td align="left">2.3.1</td>
 <td align="left">2020-07-21</td>
 <td align="left">CRAN (R 4.0.2)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">fastcluster</td>
 <td align="left"><span class="citation">Müllner (2018)</span>; <span class="citation">Müllner (2013)</span></td>
 <td align="left">1.1.25</td>
 <td align="left">2018-06-07</td>
 <td align="left">CRAN (R 4.0.0)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">cluster</td>
 <td align="left"><span class="citation">Maechler <em>et al.</em> (2019)</span></td>
 <td align="left">2.1.0</td>
 <td align="left">2019-06-19</td>
 <td align="left">CRAN (R 4.0.2)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">randomForest</td>
-<td align="left"><span class="citation">Leo Breiman <em>et al.</em> (2018)</span>; <span class="citation">Liaw and Wiener (2002)</span></td>
+<td align="left"><span class="citation">Breiman <em>et al.</em> (2018)</span>; <span class="citation">Liaw and Wiener (2002)</span></td>
 <td align="left">4.6-14</td>
 <td align="left">2018-03-25</td>
+<td align="left">CRAN (R 4.0.2)</td>
+</tr>
+<tr class="even">
+<td align="left">DBI</td>
+<td align="left"><span class="citation">R Special Interest Group on Databases (R-SIG-DB) <em>et al.</em> (2019)</span></td>
+<td align="left">1.1.0</td>
+<td align="left">2019-12-15</td>
 <td align="left">CRAN (R 4.0.2)</td>
 </tr>
 </tbody>
@@ -1773,46 +865,64 @@ Figure 2 caption
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-R-randomForest">
-<p>Leo Breiman, F. original by, Cutler, A., Andy Liaw, R. port by, and Wiener., M. (2018). ‘RandomForest: Breiman and cutler’s random forests for classification and regression’. Available at: <a href="https://CRAN.R-project.org/package=randomForest">https://CRAN.R-project.org/package=randomForest</a></p>
+<p>Breiman, L., Cutler, A., Liaw, A., and Wiener., M. (2018). ‘randomForest: Breiman and Cutler’s Random Forests for Classification and Regression’. Available at: <a href="https://CRAN.R-project.org/package=randomForest">https://CRAN.R-project.org/package=randomForest</a></p>
+</div>
+<div id="ref-R-fs">
+<p>Hester, J., and Wickham, H. (2020). ‘fs: Cross-Platform File System Operations Based on ’libuv’’. Available at: <a href="https://CRAN.R-project.org/package=fs">https://CRAN.R-project.org/package=fs</a></p>
+</div>
+<div id="ref-RN3727">
+<p>Hobbs, R. J., Higgs, E. S., and Hall, C. M. (2013). Defining novel ecosystems. In ‘Novel ecosystems: Intervening in the new ecological world order’. (Eds R. J. Hobbs, E. S. Higgs, and C. M. Hall.) pp. 58–60. (John Wiley &amp; Sons, Ltd: Oxford.) Available at: <a href="http://bcs.wiley.com/he-bcs/Books?action=index&amp;bcsId=8020&amp;itemId=1118354222">http://bcs.wiley.com/he-bcs/Books?action=index&amp;bcsId=8020&amp;itemId=1118354222</a></p>
+</div>
+<div id="ref-RN1186">
+<p>Hobbs, R. J., and Norton, D. A. (1996). Towards a conceptual framework for restoration ecology. <em>Restoration Ecology</em> <strong>4</strong>, 93–110.</p>
 </div>
 <div id="ref-randomForest2002">
-<p>Liaw, A., and Wiener, M. (2002). Classification and regression by randomForest. <em>R News</em> <strong>2</strong>, 18–22. Available at: <a href="https://CRAN.R-project.org/doc/Rnews/">https://CRAN.R-project.org/doc/Rnews/</a></p>
+<p>Liaw, A., and Wiener, M. (2002). Classification and Regression by randomForest. <em>R News</em> <strong>2</strong>, 18–22. Available at: <a href="https://CRAN.R-project.org/doc/Rnews/">https://CRAN.R-project.org/doc/Rnews/</a></p>
 </div>
 <div id="ref-R-cluster">
-<p>Maechler, M., Rousseeuw, P., Struyf, A., and Hubert, M. (2019). ‘Cluster: &quot;Finding groups in data&quot;: Cluster analysis extended rousseeuw et al.’ Available at: <a href="https://CRAN.R-project.org/package=cluster">https://CRAN.R-project.org/package=cluster</a></p>
+<p>Maechler, M., Rousseeuw, P., Struyf, A., and Hubert, M. (2019). ‘cluster: &quot;Finding Groups in Data&quot;: Cluster Analysis Extended Rousseeuw et al.’ Available at: <a href="https://CRAN.R-project.org/package=cluster">https://CRAN.R-project.org/package=cluster</a></p>
 </div>
 <div id="ref-fastcluster2013">
-<p>Müllner, D. (2013). fastcluster: Fast hierarchical, agglomerative clustering routines for R and Python. <em>Journal of Statistical Software</em> <strong>53</strong>, 1–18. Available at: <a href="http://www.jstatsoft.org/v53/i09/">http://www.jstatsoft.org/v53/i09/</a></p>
+<p>Müllner, D. (2013). fastcluster: Fast Hierarchical, Agglomerative Clustering Routines for R and Python. <em>Journal of Statistical Software</em> <strong>53</strong>, 1–18. Available at: <a href="http://www.jstatsoft.org/v53/i09/">http://www.jstatsoft.org/v53/i09/</a></p>
 </div>
 <div id="ref-R-fastcluster">
-<p>Müllner, D. (2018). ‘Fastcluster: Fast hierarchical clustering routines for r and ’python’’. Available at: <a href="https://CRAN.R-project.org/package=fastcluster">https://CRAN.R-project.org/package=fastcluster</a></p>
+<p>Müllner, D. (2018). ‘fastcluster: Fast Hierarchical Clustering Routines for R and ’Python’’. Available at: <a href="https://CRAN.R-project.org/package=fastcluster">https://CRAN.R-project.org/package=fastcluster</a></p>
 </div>
 <div id="ref-R-base">
-<p>R Core Team (2020). ‘R: A language and environment for statistical computing’. (R Foundation for Statistical Computing: Vienna, Austria.) Available at: <a href="https://www.R-project.org/">https://www.R-project.org/</a></p>
+<p>R Core Team (2020). ‘R: A Language and Environment for Statistical Computing’. (R Foundation for Statistical Computing: Vienna, Austria.) Available at: <a href="https://www.R-project.org/">https://www.R-project.org/</a></p>
+</div>
+<div id="ref-RN627">
+<p>Robinson, T., Canty, P., Mooney, T., and Rudduck, P. (1996). ‘South australia’s offshore islands’. (Commonwealth of Australia; Department of Environment; Natural Resources: South Australia.)</p>
+</div>
+<div id="ref-RN3492">
+<p>Rogers, D. J. (2010). A landscape assessment for the southern mt lofty ranges landscape. Version 2. Part 1. Summary. Report. Department of Environment; Natural Resources; South Australia.</p>
+</div>
+<div id="ref-R-DBI">
+<p>R Special Interest Group on Databases (R-SIG-DB), Wickham, H., and Müller, K. (2019). ‘DBI: R Database Interface’. Available at: <a href="https://CRAN.R-project.org/package=DBI">https://CRAN.R-project.org/package=DBI</a></p>
 </div>
 <div id="ref-R-tidyverse">
-<p>Wickham, H. (2019). ‘Tidyverse: Easily install and load the ’tidyverse’’. Available at: <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a></p>
+<p>Wickham, H. (2019). ‘tidyverse: Easily Install and Load the ’Tidyverse’’. Available at: <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a></p>
 </div>
 <div id="ref-tidyverse2019">
 <p>Wickham, H., Averick, M., Bryan, J., Chang, W., McGowan, L. D., François, R., Grolemund, G., Hayes, A., Henry, L., Hester, J., Kuhn, M., Pedersen, T. L., Miller, E., Bache, S. M., Müller, K., Ooms, J., Robinson, D., Seidel, D. P., Spinu, V., Takahashi, K., Vaughan, D., Wilke, C., Woo, K., and Yutani, H. (2019). Welcome to the tidyverse. <em>Journal of Open Source Software</em> <strong>4</strong>, 1686. doi:<a href="https://doi.org/10.21105/joss.01686">10.21105/joss.01686</a></p>
 </div>
 <div id="ref-R-devtools">
-<p>Wickham, H., Hester, J., and Chang, W. (2020). ‘Devtools: Tools to make developing r packages easier’. Available at: <a href="https://CRAN.R-project.org/package=devtools">https://CRAN.R-project.org/package=devtools</a></p>
+<p>Wickham, H., Hester, J., and Chang, W. (2020). ‘devtools: Tools to Make Developing R Packages Easier’. Available at: <a href="https://CRAN.R-project.org/package=devtools">https://CRAN.R-project.org/package=devtools</a></p>
 </div>
 <div id="ref-knitr2014">
-<p>Xie, Y. (2014). Knitr: A comprehensive tool for reproducible research in R. In ‘Implementing reproducible computational research’. (Eds V. Stodden, F. Leisch, and R. D. Peng.) (Chapman; Hall/CRC.) Available at: <a href="http://www.crcpress.com/product/isbn/9781466561595">http://www.crcpress.com/product/isbn/9781466561595</a></p>
+<p>Xie, Y. (2014). knitr: A Comprehensive Tool for Reproducible Research in R. In ‘Implementing reproducible computational research’. (Eds V. Stodden, F. Leisch, and R. D. Peng.) (Chapman; Hall/CRC.) Available at: <a href="http://www.crcpress.com/product/isbn/9781466561595">http://www.crcpress.com/product/isbn/9781466561595</a></p>
 </div>
 <div id="ref-knitr2015">
-<p>Xie, Y. (2015). ‘Dynamic documents with R and knitr’ 2nd ed. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a></p>
+<p>Xie, Y. (2015). ‘Dynamic Documents with R and knitr’ 2nd ed. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a></p>
 </div>
 <div id="ref-bookdown2016">
-<p>Xie, Y. (2016). ‘Bookdown: Authoring books and technical documents with R markdown’. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://github.com/rstudio/bookdown">https://github.com/rstudio/bookdown</a></p>
+<p>Xie, Y. (2016). ‘bookdown: Authoring Books and Technical Documents with R Markdown’. (Chapman; Hall/CRC: Boca Raton, Florida.) Available at: <a href="https://github.com/rstudio/bookdown">https://github.com/rstudio/bookdown</a></p>
 </div>
 <div id="ref-R-knitr">
-<p>Xie, Y. (2020a). ‘Knitr: A general-purpose package for dynamic report generation in r’. Available at: <a href="https://CRAN.R-project.org/package=knitr">https://CRAN.R-project.org/package=knitr</a></p>
+<p>Xie, Y. (2020a). ‘knitr: A General-Purpose Package for Dynamic Report Generation in R’. Available at: <a href="https://CRAN.R-project.org/package=knitr">https://CRAN.R-project.org/package=knitr</a></p>
 </div>
 <div id="ref-R-bookdown">
-<p>Xie, Y. (2020b). ‘Bookdown: Authoring books and technical documents with r markdown’. Available at: <a href="https://CRAN.R-project.org/package=bookdown">https://CRAN.R-project.org/package=bookdown</a></p>
+<p>Xie, Y. (2020b). ‘bookdown: Authoring Books and Technical Documents with R Markdown’. Available at: <a href="https://CRAN.R-project.org/package=bookdown">https://CRAN.R-project.org/package=bookdown</a></p>
 </div>
 </div>
 </div>
